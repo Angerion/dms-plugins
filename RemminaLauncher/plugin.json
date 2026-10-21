@@ -1,0 +1,14 @@
+{
+    "id": "remminaLauncher",
+    "name": "Remmina Launcher",
+    "description": "Quickly search and launch Remmina connection profiles",
+    "version": "1.0.0",
+    "author": "Angerion",
+    "type": "launcher",
+    "capabilities": ["remmina"],
+    "component": "./RemminaLauncher.qml",
+    "trigger": "r:",
+    "icon": "desktop_windows",
+    "settings": "./RemminaSettings.qml",
+    "permissions": ["settings_read", "settings_write", "process"]
+}

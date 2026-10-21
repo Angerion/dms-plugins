@@ -1,0 +1,9 @@
+{
+    "id": "starshipWeather",
+    "name": "Starship Weather IPC",
+    "description": "Exposes weather info via IPC for starship",
+    "version": "1.0",
+    "author": "Angerion",
+    "type": "daemon",
+    "component": "./main.qml"
+}

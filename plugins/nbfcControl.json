@@ -1,0 +1,16 @@
+{
+  "id": "nbfcControl",
+  "name": "NBFC Fan Control",
+  "description": "Control notebook fan speed via NBFC with bar pill, Control Center tile, and OSD support.",
+  "version": "1.0.0",
+  "author": "Angerion",
+  "type": "widget",
+  "capabilities": ["dankbar-widget", "control-center-widget"],
+  "category": "system",
+  "repo": "https://github.com/Angerion/dms-plugins.git",
+  "path": "NbfcControl",
+  "requires_dms": ">=1.4.0",
+  "dependencies": ["nbfc-linux"],
+  "compositors": ["any"],
+  "distro": ["any"]
+}

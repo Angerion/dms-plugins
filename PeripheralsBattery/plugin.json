@@ -1,0 +1,13 @@
+{
+    "id": "peripheralsBattery",
+    "name": "Peripherals Battery",
+    "description": "Flexible peripheral battery monitor with custom RegEx matching and per-widget variants.",
+    "version": "1.1.0",
+    "author": "Angerion",
+    "type": "widget",
+    "capabilities": ["variants"],
+    "component": "./PeripheralsBattery.qml",
+    "icon": "battery_charging_full",
+    "settings": "./PeripheralsSettings.qml",
+    "permissions": ["settings_read", "settings_write", "process"]
+}

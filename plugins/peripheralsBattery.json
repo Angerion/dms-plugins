@@ -1,0 +1,16 @@
+{
+  "id": "peripheralsBattery",
+  "name": "Peripherals Battery",
+  "description": "Peripheral battery monitor with custom RegEx device categorization and bar pill display.",
+  "version": "1.1.0",
+  "author": "Angerion",
+  "type": "widget",
+  "capabilities": ["variants", "dankbar-widget"],
+  "category": "system",
+  "repo": "https://github.com/Angerion/dms-plugins.git",
+  "path": "PeripheralsBattery",
+  "requires_dms": ">=1.4.0",
+  "dependencies": ["upower"],
+  "compositors": ["any"],
+  "distro": ["any"]
+}

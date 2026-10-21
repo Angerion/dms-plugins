@@ -1,0 +1,16 @@
+{
+  "id": "remminaLauncher",
+  "name": "Remmina Launcher",
+  "description": "Quickly search and launch Remmina connection profiles directly from DMS launcher.",
+  "version": "1.0.0",
+  "author": "Angerion",
+  "type": "launcher",
+  "capabilities": ["remmina"],
+  "category": "utilities",
+  "repo": "https://github.com/Angerion/dms-plugins.git",
+  "path": "RemminaLauncher",
+  "requires_dms": ">=1.4.0",
+  "dependencies": ["remmina"],
+  "compositors": ["any"],
+  "distro": ["any"]
+}

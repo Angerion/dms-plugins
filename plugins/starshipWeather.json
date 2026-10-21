@@ -1,0 +1,16 @@
+{
+  "id": "starshipWeather",
+  "name": "Starship Weather IPC",
+  "description": "Background daemon exposing DMS weather state and styled prompt string over IPC.",
+  "version": "1.0.0",
+  "author": "Angerion",
+  "type": "daemon",
+  "capabilities": ["ipc"],
+  "category": "weather",
+  "repo": "https://github.com/Angerion/dms-plugins.git",
+  "path": "starshipWeather",
+  "requires_dms": ">=1.4.0",
+  "dependencies": [],
+  "compositors": ["any"],
+  "distro": ["any"]
+}

@@ -1,0 +1,12 @@
+# Prerequisites / backups
+*.bak
+*.bak*
+*~
+*.swp
+*.swo
+
+# OS / Editor artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
