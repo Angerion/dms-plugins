@@ -336,7 +336,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         y: gap
                         DIcon {
-                            id: hOsdFanIcon
+                            id: vOsdFanIcon
                             anchors.centerIn: parent
                             name: "mode_fan"
                             size: Theme.iconSize
@@ -346,7 +346,7 @@ Item {
                                 running: root.actualSpeed > 0 && osdInst.shouldBeVisible
                                 onTriggered: {
                                     const degPerSec = 60 + (root.actualSpeed / 100) * 660;
-                                    hOsdFanIcon.rotation = (hOsdFanIcon.rotation + degPerSec * frameTime) % 360;
+                                    vOsdFanIcon.rotation = (vOsdFanIcon.rotation + degPerSec * frameTime) % 360;
                                 }
                             }
                         }
