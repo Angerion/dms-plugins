@@ -5,12 +5,43 @@ import qs.Common
 import qs.Services
 import qs.Widgets
 import qs.DCommon.Widgets
+import qs.Modules.OSD
 
 Item {
     id: root
 
     property string pluginId: "nbfcControl"
     property var pluginService: null
+
+    Component.onCompleted: {
+        IslandActivityService.registerRenderer("nbfcControl", islandSliderFace, null);
+    }
+
+    Component {
+        id: islandSliderFace
+
+        OsdLevelRow {
+            implicitWidth: SettingsData.osdAlwaysShowValue ? 330 : 282
+            implicitHeight: 36
+            iconName: "mode_fan"
+            tonalIcon: false
+            iconInteractive: true
+            iconLabel: root.isAuto ? "Manual (100%)" : "Auto"
+            value: root.requestedSpeed
+            minimum: 0
+            maximum: 100
+            unit: "%"
+            displayText: root.displaySpeed
+            sliderEnabled: !root.isAuto
+            onIconClicked: root.doToggle()
+            onSliderValueChanged: newValue => {
+                if (!root.isAuto && newValue !== root.requestedSpeed) {
+                    root.setSpeedDebounced(newValue);
+                    root.showOsd();
+                }
+            }
+        }
+    }
 
     // Reactive fan state model
     property int requestedSpeed: 50
