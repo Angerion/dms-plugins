@@ -119,10 +119,19 @@ PluginComponent {
                 anchors.centerIn: parent
                 spacing: Theme.spacingS
                 DIcon {
+                    id: hBarFanIcon
                     name: "mode_fan"
                     size: Theme.iconSizeSmall
                     color: root.isAuto ? Theme.primary : Theme.surfaceText
                     anchors.verticalCenter: parent.verticalCenter
+
+                    FrameAnimation {
+                        running: root.actualSpeed > 0 && hBarFanIcon.visible
+                        onTriggered: {
+                            const degPerSec = 60 + (root.actualSpeed / 100) * 660;
+                            hBarFanIcon.rotation = (hBarFanIcon.rotation + degPerSec * frameTime) % 360;
+                        }
+                    }
                 }
                 StyledText {
                     text: root.displaySpeed
@@ -150,10 +159,19 @@ PluginComponent {
                 anchors.centerIn: parent
                 spacing: Theme.spacingS
                 DIcon {
+                    id: vBarFanIcon
                     name: "mode_fan"
                     size: Theme.iconSizeSmall
                     color: root.isAuto ? Theme.primary : Theme.surfaceText
                     anchors.horizontalCenter: parent.horizontalCenter
+
+                    FrameAnimation {
+                        running: root.actualSpeed > 0 && vBarFanIcon.visible
+                        onTriggered: {
+                            const degPerSec = 60 + (root.actualSpeed / 100) * 660;
+                            vBarFanIcon.rotation = (vBarFanIcon.rotation + degPerSec * frameTime) % 360;
+                        }
+                    }
                 }
                 StyledText {
                     text: root.displaySpeed

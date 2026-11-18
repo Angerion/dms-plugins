@@ -20,24 +20,48 @@ Item {
     Component {
         id: islandSliderFace
 
-        OsdLevelRow {
+        Item {
             implicitWidth: SettingsData.osdAlwaysShowValue ? 330 : 282
             implicitHeight: 36
-            iconName: "mode_fan"
-            tonalIcon: false
-            iconInteractive: true
-            iconLabel: root.isAuto ? "Manual (100%)" : "Auto"
-            value: root.requestedSpeed
-            minimum: 0
-            maximum: 100
-            unit: "%"
-            displayText: root.displaySpeed
-            sliderEnabled: !root.isAuto
-            onIconClicked: root.doToggle()
-            onSliderValueChanged: newValue => {
-                if (!root.isAuto && newValue !== root.requestedSpeed) {
-                    root.setSpeedDebounced(newValue);
-                    root.showOsd();
+
+            OsdLevelRow {
+                id: levelRow
+                anchors.fill: parent
+                iconName: ""
+                tonalIcon: false
+                iconInteractive: true
+                iconLabel: root.isAuto ? "Manual (100%)" : "Auto"
+                value: root.requestedSpeed
+                minimum: 0
+                maximum: 100
+                unit: "%"
+                displayText: root.displaySpeed
+                sliderEnabled: !root.isAuto
+                onIconClicked: root.doToggle()
+                onSliderValueChanged: newValue => {
+                    if (!root.isAuto && newValue !== root.requestedSpeed) {
+                        root.setSpeedDebounced(newValue);
+                        root.showOsd();
+                    }
+                }
+            }
+
+            DIcon {
+                id: spinningFanIcon
+                x: levelRow.mirrored ? levelRow.width - width - levelRow.endPadding : levelRow.endPadding
+                y: (levelRow.height - height) / 2
+                width: levelRow.iconExtent
+                height: width
+                name: "mode_fan"
+                size: Math.min(Theme.iconSize, width)
+                color: root.isAuto ? Theme.primary : Theme.surfaceText
+
+                FrameAnimation {
+                    running: root.actualSpeed > 0 && spinningFanIcon.visible
+                    onTriggered: {
+                        const degPerSec = 60 + (root.actualSpeed / 100) * 660;
+                        spinningFanIcon.rotation = (spinningFanIcon.rotation + degPerSec * frameTime) % 360;
+                    }
                 }
             }
         }
@@ -261,10 +285,19 @@ Item {
                         x: gap
                         anchors.verticalCenter: parent.verticalCenter
                         DIcon {
+                            id: hOsdFanIcon
                             anchors.centerIn: parent
                             name: "mode_fan"
                             size: Theme.iconSize
                             color: root.isAuto ? Theme.primary : Theme.surfaceText
+
+                            FrameAnimation {
+                                running: root.actualSpeed > 0 && osdInst.shouldBeVisible
+                                onTriggered: {
+                                    const degPerSec = 60 + (root.actualSpeed / 100) * 660;
+                                    hOsdFanIcon.rotation = (hOsdFanIcon.rotation + degPerSec * frameTime) % 360;
+                                }
+                            }
                         }
                     }
 
@@ -303,10 +336,19 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         y: gap
                         DIcon {
+                            id: hOsdFanIcon
                             anchors.centerIn: parent
                             name: "mode_fan"
                             size: Theme.iconSize
                             color: root.isAuto ? Theme.primary : Theme.surfaceText
+
+                            FrameAnimation {
+                                running: root.actualSpeed > 0 && osdInst.shouldBeVisible
+                                onTriggered: {
+                                    const degPerSec = 60 + (root.actualSpeed / 100) * 660;
+                                    hOsdFanIcon.rotation = (hOsdFanIcon.rotation + degPerSec * frameTime) % 360;
+                                }
+                            }
                         }
                     }
 
