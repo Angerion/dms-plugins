@@ -12,13 +12,27 @@ Item {
     property string pluginId: "nbfcControl"
     property var pluginService: null
 
-    property int currentSpeed: 50
+    // Reactive fan state model
+    property int requestedSpeed: 50
+    property int actualSpeed: 0
     property bool isAuto: true
-    property string displaySpeed: "Auto"
+    readonly property string displaySpeed: isAuto ? "Auto" : (requestedSpeed + "%")
 
+    property bool _initialized: false
     property real lastInteractionTime: 0
     property int targetSpeedCache: -1
     property var osds: []
+
+    readonly property var fallbackOsdScreens: {
+        const screens = SettingsData.getFilteredScreens("osd");
+        if (!SettingsData.dankIslandEnabled)
+            return screens;
+        return screens.filter(screen => !SettingsData.dankIslandHandlesSystemOsd(screen));
+    }
+
+    function clampSpeed(speed) {
+        return Math.max(0, Math.min(100, Math.round(speed)));
+    }
 
     function runNbfcSet(args, id) {
         Proc.runCommand(id, ["nbfc", "set"].concat(args), (stdout, exitCode) => {
@@ -48,24 +62,29 @@ Item {
         onTriggered: {
             Proc.runCommand("nbfc.status", ["nbfc", "status"], (stdout, exitCode) => {
                 if (exitCode !== 0) return;
+
+                const curMatch = stdout.match(/Current Fan Speed.*?:\s*([\d.]+)/);
+                if (curMatch) {
+                    root.actualSpeed = root.clampSpeed(parseFloat(curMatch[1]));
+                }
+
                 if (Date.now() - root.lastInteractionTime < 2000) return;
-                if (/Auto Control Enabled\s*:\s*true/i.test(stdout)) {
-                    if (!root.isAuto) {
-                        root.isAuto = true;
-                        root.displaySpeed = "Auto";
+
+                const autoEnabled = /Auto Control Enabled\s*:\s*true/i.test(stdout);
+                const targetMatch = stdout.match(/Target Fan Speed.*?:\s*([\d.]+)/) || curMatch;
+
+                if (autoEnabled) {
+                    root.isAuto = true;
+                    if (!root._initialized && targetMatch) {
+                        root.requestedSpeed = root.clampSpeed(parseFloat(targetMatch[1]));
                     }
                 } else {
-                    const match = stdout.match(/Target Fan Speed.*?:\s*([\d.]+)/)
-                        || stdout.match(/Current Fan Speed.*?:\s*([\d.]+)/);
-                    if (match) {
-                        const newSpeed = Math.max(0, Math.min(100, Math.round(parseFloat(match[1]))));
-                        if (root.isAuto || newSpeed !== root.currentSpeed) {
-                            root.isAuto = false;
-                            root.currentSpeed = newSpeed;
-                            root.displaySpeed = newSpeed + "%";
-                        }
+                    root.isAuto = false;
+                    if (targetMatch) {
+                        root.requestedSpeed = root.clampSpeed(parseFloat(targetMatch[1]));
                     }
                 }
+                root._initialized = true;
             });
         }
     }
@@ -73,23 +92,22 @@ Item {
     function setSpeedDebounced(speed) {
         if (root.isAuto) return;
         root.lastInteractionTime = Date.now();
-        const safeSpeed = Math.max(0, Math.min(100, Math.round(speed)));
-        root.currentSpeed = safeSpeed;
-        root.displaySpeed = safeSpeed + "%";
+        const safeSpeed = root.clampSpeed(speed);
+        root.requestedSpeed = safeSpeed;
         root.targetSpeedCache = safeSpeed;
         debounceTimer.restart();
     }
 
     function doUp() {
         if (root.isAuto) root.isAuto = false;
-        const newSpeed = Math.min(100, root.currentSpeed + 5);
+        const newSpeed = Math.min(100, root.requestedSpeed + 5);
         root.setSpeedDebounced(newSpeed);
         root.showOsd();
     }
 
     function doDown() {
         if (root.isAuto) root.isAuto = false;
-        const newSpeed = Math.max(0, root.currentSpeed - 5);
+        const newSpeed = Math.max(0, root.requestedSpeed - 5);
         root.setSpeedDebounced(newSpeed);
         root.showOsd();
     }
@@ -100,15 +118,22 @@ Item {
         root.lastInteractionTime = Date.now();
         if (root.isAuto) {
             root.isAuto = false;
-            root.currentSpeed = 100;
-            root.displaySpeed = "100%";
+            root.requestedSpeed = 100;
             root.runNbfcSet(["-s", "100"], "nbfc.set.toggle");
         } else {
             root.isAuto = true;
-            root.displaySpeed = "Auto";
             root.runNbfcSet(["-a"], "nbfc.set.toggle");
         }
         root.showOsd();
+    }
+
+    Connections {
+        target: IslandActivityService
+        function onActionInvoked(source, id, action) {
+            if (source === "nbfcControl" && id === "osd" && action === "toggle") {
+                root.doToggle();
+            }
+        }
     }
 
     IpcHandler {
@@ -116,17 +141,17 @@ Item {
 
         function up(): string {
             root.doUp();
-            return "Speed set to " + root.currentSpeed + "%";
+            return "Speed set to " + root.requestedSpeed + "%";
         }
 
         function down(): string {
             root.doDown();
-            return "Speed set to " + root.currentSpeed + "%";
+            return "Speed set to " + root.requestedSpeed + "%";
         }
 
         function toggle(): string {
             root.doToggle();
-            return root.isAuto ? "Auto" : (root.currentSpeed + "%");
+            return root.isAuto ? "Auto" : (root.requestedSpeed + "%");
         }
 
         function set(speed: string): string {
@@ -135,13 +160,36 @@ Item {
                 root.isAuto = false;
                 root.setSpeedDebounced(s);
                 root.showOsd();
-                return "Speed set to " + root.currentSpeed + "%";
+                return "Speed set to " + root.requestedSpeed + "%";
             }
             return "Invalid speed";
         }
     }
 
     function showOsd() {
+        if (SettingsData.dankIslandEnabled && IslandActivityService.activitiesAvailable) {
+            IslandActivityService.publish("nbfcControl", "osd", {
+                title: root.isAuto ? "Fan: Auto" : ("Fan: " + root.requestedSpeed + "%"),
+                subtitle: root.isAuto ? ("Current " + root.actualSpeed + "%") : "Manual",
+                value: root.isAuto ? "Auto" : (root.requestedSpeed + "%"),
+                icon: "mode_fan",
+                iconAnimation: root.isAuto ? "" : "spin",
+                progress: root.isAuto ? -1 : (root.requestedSpeed / 100),
+                duration: 2500,
+                announce: true,
+                priorityClass: "high",
+                preemption: "higher",
+                compact: "label",
+                actions: [
+                    {
+                        id: "toggle",
+                        label: root.isAuto ? "100%" : "Auto",
+                        role: "secondary"
+                    }
+                ]
+            });
+        }
+
         for (let i = 0; i < osds.length; i++) {
             if (!osds[i].shouldBeVisible) {
                 osds[i].show();
@@ -152,7 +200,7 @@ Item {
     }
 
     Instantiator {
-        model: Quickshell.screens
+        model: root.fallbackOsdScreens
         delegate: DOSD {
             id: osdInst
 
@@ -196,14 +244,14 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         minimum: 0
                         maximum: 100
-                        value: root.currentSpeed
+                        value: root.requestedSpeed
                         enabled: !root.isAuto
                         showValue: true
                         unit: "%"
                         thumbOutlineColor: Theme.surfaceContainer
 
                         onSliderValueChanged: (newValue) => {
-                            if (!root.isAuto) {
+                            if (!root.isAuto && newValue !== root.requestedSpeed) {
                                 root.setSpeedDebounced(newValue);
                                 osdInst.resetHideTimer();
                             }
@@ -253,7 +301,7 @@ Item {
                             id: vertFill
                             width: parent.width
                             height: {
-                                const ratio = root.currentSpeed / 100;
+                                const ratio = root.requestedSpeed / 100;
                                 return ratio * parent.height;
                             }
                             anchors.bottom: parent.bottom
@@ -269,7 +317,7 @@ Item {
                             height: 8
                             radius: Theme.cornerRadius
                             y: {
-                                const ratio = root.currentSpeed / 100;
+                                const ratio = root.requestedSpeed / 100;
                                 const travel = parent.height - height;
                                 return Math.max(0, Math.min(travel, travel * (1 - ratio)));
                             }
@@ -302,7 +350,7 @@ Item {
                                 if (root.isAuto) return;
                                 const ratio = 1.0 - (mouse.y / height);
                                 const newSpeed = Math.max(0, Math.min(100, Math.round(ratio * 100)));
-                                if (root.currentSpeed !== newSpeed) {
+                                if (root.requestedSpeed !== newSpeed) {
                                     root.setSpeedDebounced(newSpeed);
                                     osdInst.resetHideTimer();
                                 }

@@ -10,7 +10,8 @@ PluginComponent {
     property var popoutService: null
 
     readonly property var daemon: PluginService.pluginDaemonInstances["nbfcControl"] ?? null
-    readonly property int currentSpeed: daemon?.currentSpeed ?? 50
+    readonly property int requestedSpeed: daemon?.requestedSpeed ?? 50
+    readonly property int actualSpeed: daemon?.actualSpeed ?? 0
     readonly property bool isAuto: daemon?.isAuto ?? true
     readonly property string displaySpeed: daemon?.displaySpeed ?? "Auto"
 
@@ -79,20 +80,20 @@ PluginComponent {
                         height: 30
                         minimum: 0
                         maximum: 100
-                        value: root.currentSpeed
+                        value: root.requestedSpeed
                         enabled: !root.isAuto
                         showValue: false
                         anchors.verticalCenter: parent.verticalCenter
 
                         onSliderValueChanged: (newValue) => {
-                            if (!root.isAuto && root.daemon) {
+                            if (!root.isAuto && root.daemon && newValue !== root.requestedSpeed) {
                                 root.daemon.setSpeedDebounced(newValue);
                             }
                         }
                     }
 
                     StyledText {
-                        text: root.currentSpeed + "%"
+                        text: root.requestedSpeed + "%"
                         color: Theme.surfaceText
                         width: 40
                         horizontalAlignment: Text.AlignRight
