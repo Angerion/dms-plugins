@@ -128,7 +128,7 @@ PluginComponent {
                     FrameAnimation {
                         running: root.actualSpeed > 0 && hBarFanIcon.visible
                         onTriggered: {
-                            const degPerSec = 60 + (root.actualSpeed / 100) * 660;
+                            const degPerSec = 30 + (root.actualSpeed / 100) * 690;
                             hBarFanIcon.rotation = (hBarFanIcon.rotation + degPerSec * frameTime) % 360;
                         }
                     }
@@ -168,7 +168,7 @@ PluginComponent {
                     FrameAnimation {
                         running: root.actualSpeed > 0 && vBarFanIcon.visible
                         onTriggered: {
-                            const degPerSec = 60 + (root.actualSpeed / 100) * 660;
+                            const degPerSec = 30 + (root.actualSpeed / 100) * 690;
                             vBarFanIcon.rotation = (vBarFanIcon.rotation + degPerSec * frameTime) % 360;
                         }
                     }

@@ -59,7 +59,7 @@ Item {
                 FrameAnimation {
                     running: root.actualSpeed > 0 && spinningFanIcon.visible
                     onTriggered: {
-                        const degPerSec = 60 + (root.actualSpeed / 100) * 660;
+                        const degPerSec = 30 + (root.actualSpeed / 100) * 690;
                         spinningFanIcon.rotation = (spinningFanIcon.rotation + degPerSec * frameTime) % 360;
                     }
                 }
@@ -294,7 +294,7 @@ Item {
                             FrameAnimation {
                                 running: root.actualSpeed > 0 && osdInst.shouldBeVisible
                                 onTriggered: {
-                                    const degPerSec = 60 + (root.actualSpeed / 100) * 660;
+                                    const degPerSec = 30 + (root.actualSpeed / 100) * 690;
                                     hOsdFanIcon.rotation = (hOsdFanIcon.rotation + degPerSec * frameTime) % 360;
                                 }
                             }
@@ -345,7 +345,7 @@ Item {
                             FrameAnimation {
                                 running: root.actualSpeed > 0 && osdInst.shouldBeVisible
                                 onTriggered: {
-                                    const degPerSec = 60 + (root.actualSpeed / 100) * 660;
+                                    const degPerSec = 30 + (root.actualSpeed / 100) * 690;
                                     vOsdFanIcon.rotation = (vOsdFanIcon.rotation + degPerSec * frameTime) % 360;
                                 }
                             }
