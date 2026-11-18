@@ -2,11 +2,14 @@
     "id": "nbfcControl",
     "name": "NBFC Fan Control",
     "description": "Control Notebook Fan via NBFC with OSD support.",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "author": "Angerion",
-    "type": "widget",
-    "capabilities": ["dankbar-widget", "control-center-widget"],
-    "component": "./NbfcControl.qml",
+    "type": "composite",
+    "capabilities": ["daemon", "dankbar-widget", "control-center-widget"],
+    "components": {
+        "daemon": "./NbfcDaemon.qml",
+        "widget": "./NbfcControl.qml"
+    },
     "icon": "mode_fan",
     "permissions": ["process", "settings_read", "settings_write"]
 }
